@@ -125,7 +125,8 @@ a {
 }
 .redes {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: .5rem 1rem;
 }
 .redes p {
     font-size: 2rem;
@@ -146,11 +147,15 @@ a {
 }
 .face {
     background-color: rgb(0, 26, 255);
+    grid-column: 1/2;
 }
 .insta {
     background-image: linear-gradient(-225deg, #231557 0%, #44107A 29%, #FF1361 67%, #FFF800 100%);
 }
-
+.git {
+    color: black;
+    font-size: 6rem;
+}
 /* clases del div de la musica */
 .music {
     z-index: 2;
@@ -188,29 +193,54 @@ a {
     border-radius: 1rem;
 }
 .funciones {
-    width: 6rem;
-    height: 6rem;
     border-radius: 50%;
-    cursor: pointer;
     margin-bottom: 5rem;
 }
 .acciones {
     border-radius: 50%;
-    transition: all ease-out .3s;
     box-shadow: black 0 0 .5rem;
+    cursor: pointer;
 }
 .play {
     background-color: red;
-    width: 5rem;
-    height: 5rem;
-    font-size: 5rem;
+    width: 6rem;
+    height: 6rem;
+    font-size: 6rem;
 }
 .stop {
     font-weight: bold;
     border: .3rem solid black;
     width: 6rem;
     height: 6rem;
-    font-size: 5rem;
+    font-size: 6rem;
+    background-color: white;  
+}
+.skip {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: white;
+    margin: 0 3rem;
+    font-size: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.skip::after {
+    content: "5";
+    position: absolute;
+    font-size: 2rem;
+    font-family: 'Ubuntu', sans-serif;
+    top: 30%;
+    font-weight: bold;
+}
+.plus {
+    position: relative;
+}
+.less {
+    transform: rotateY(180deg)
+}
+.less::after {
+    transform: rotateY(180deg)
 }
 .utilidades {
     border-radius: 1rem;
@@ -230,11 +260,12 @@ a {
     margin-right: .5rem;
 }
 .duration {
-    height: .5rem;
+    height: 1rem;
     width: 60%;
     background-color: #333;
     border-radius: .3rem;
     transition: all ease .3s;
+    cursor: pointer;
 }
 .duration:hover {
     height: 1rem;
@@ -321,6 +352,12 @@ a {
     .redes {
         width: 30%;
         height: 30%;
+    }
+    .duration {
+        height: .5rem;
+    }
+    .duration:hover {
+        height: 1rem;
     }
 }
 @media (min-width: 900px) {

@@ -1,72 +1,52 @@
 // Variables
-const songs = document.querySelectorAll(".song");
+const divSongs = document.querySelector(".songs");
 const body = document.querySelector("body");
 let audio;
-let anterior = 0;
-let segundos = 0;
-let minutos = 0 ;
 
-// listener
+// listener for the events
 eventListener();
 function eventListener() {
-    // Recorrer el arreglo de las canciones;
-    songs.forEach((song, key) => {
-        // Listener para una canción
-        song.addEventListener("click", () => {
-            const text = song.children[1].textContent;
-            
-            // Muestra la cancion a reproducir en el html
-            showDiv(key, text);
-        });
-    });
-    
-    // Revisa el tiempo de la canción
-    setInterval(() => {
-        if(audio) {
-            // Remueve el html de la canción si esta acabó
-            Finish();
-    
-            // Muestra el tiempo de la canción
-            showTime();
-        }
-    }, 50);
 
-    
-    // Calcula y muestra en pantalla el tiempo de la canción
-    setInterval(() => {
-        if(audio) {
-            if(audio.currentTime !== anterior) {
-                segundos++;
-                if(segundos > 59) {
-                    segundos = 0;
-                    minutos++;
-                }
-                
-                const timeAudio = document.querySelector(".time-audio");
-                const time = document.createElement("P");
-                while(timeAudio.firstChild) {
-                    timeAudio.removeChild(timeAudio.firstChild);
-                }
-                if(segundos < 10) {
-                    time.textContent = `0${minutos}:0${segundos}`
-                } else {
-                    time.textContent = `0${minutos}:${segundos}`
-                }
-                timeAudio.appendChild(time)
-            }
-            anterior = audio.currentTime;
-        }
-    }, 1000);
+    // when the document is ready, uploads the document adding the songs
+    document.addEventListener('DOMContentLoaded', initApp);
 }
 
-// Muestra el html con la canción a reproducir
-function showDiv(key, texto) {
-    if(!audio) {
-        // Crea el nuevo audio
-        audio = new Audio(`songs/${key + 1}.mp3`);
-        audio.play();
+// creates and shows each song on the document
+function initApp() {
+    DBmusics.forEach(song => {
+        const {reference, name} = song
 
-        // Variables, classes y acciones para el div de la canción
+        const div = document.createElement('DIV');
+        div.className = "bg-white song";
+        div.innerHTML = `
+            <img src="img/${reference}.jpg" alt="image-song" class="imagen">
+            <h2 class="song__text flex">${name}</h2>
+        `;
+
+        div.addEventListener("click", () => {            
+            // calls the function that create the song which is playing
+            showDiv(reference, name);
+        });
+
+        // adds each div of the songs to the DOM
+        divSongs.appendChild(div);
+    });
+}
+
+
+// shows the div of the song that is gonna play
+function showDiv(song, texto) {
+    if(!audio) {
+        // Creates the new audio
+        audio = new Audio(`songs/${song}.mp3`);
+        audio.play();
+        audio.ontimeupdate = () => {
+            showTime();
+            Finish();
+            countTime()
+        }
+        
+        // Variables, classes and actions of the song
         const div = document.createElement("DIV");
         div.classList.add("music", "flex");
         setTimeout(() => {
@@ -78,15 +58,28 @@ function showDiv(key, texto) {
     
         const container = document.createElement("DIV");
         container.classList.add("music__container", "flex");
-        container.style.backgroundImage = `url(img/${key + 1}.jpg)`;
+        container.style.backgroundImage = `url(img/${song}.jpg)`;
     
         const h2 = document.createElement("H2");
         h2.classList.add("shadow");
         h2.textContent = `${texto}`;
     
         const functions = document.createElement("DIV");
-        functions.classList.add("funciones", "bg-white", "flex");
-        
+        functions.classList.add("funciones", "flex");
+
+        const skipPlus = document.createElement("I");
+        skipPlus.className = "skip acciones bx bx-revision plus";
+        skipPlus.onclick = () => {
+            audio.currentTime+= 5;
+        }
+        const skipLess = document.createElement("I");
+        skipLess.className = "skip acciones bx bx-revision less";
+        skipLess.onclick = () => {
+            if(audio.currentTime > 0) {
+                audio.currentTime-= 5;
+            }
+        }
+
         const iconPlay = document.createElement("I");
         iconPlay.classList.add("play", "acciones", "hide", "flex", "cl-white");
         iconPlay.innerHTML = "<i class='bx bx-play'></i>";
@@ -94,25 +87,48 @@ function showDiv(key, texto) {
         const iconPause = document.createElement("I");
         iconPause.classList.add("stop", "acciones", "flex");
         iconPause.innerHTML = "<i class='bx bx-pause'></i>";
-
+        
         const controls = document.createElement("DIV");
         controls.classList.add("utilidades", "bg-white", "shadow");
         controls.innerHTML = `
             <div class="time-audio"></div>
-            <div class="duration">
-                <div class="time"></div>
-            </div>
         `;
+        const divDuration = document.createElement("DIV");
+        divDuration.className = "duration";
+        const divTime = document.createElement("DIV");
+        divTime.className = "time";
+        divDuration.appendChild(divTime);
+        let click = false;
+
+        divDuration.onclick = e => {
+            point = (e.offsetX / divDuration.clientWidth) * audio.duration;
+            audio.currentTime = point;
+        }
+        divDuration.onmousedown = () => {
+            audio.pause();
+            click = true;
+        }
+        divDuration.onmouseup = () => {
+            audio.play();
+            click = false;
+        }
+        divDuration.onmousemove = e => {
+            if(click) {
+                point = (e.offsetX / divDuration.clientWidth) * audio.duration;
+                audio.currentTime = point;
+            }
+        }
+        controls.appendChild(divDuration);
         
         const volume1 =  document.createElement("I");
-        volume1.classList.add("bx", "bxs-volume-full", "full");
+        volume1.classList.add("bx", "bxs-volume-full", "full", "v");
         const volume2 =  document.createElement("I");
-        volume2.classList.add("bx", "bxs-volume-low", "hide", "low");
+        volume2.classList.add("bx", "bxs-volume-low", "hide", "low", "v");
         const volume3 =  document.createElement("I");
-        volume3.classList.add("bx", "bxs-volume-mute", "hide", "mute");
+        volume3.classList.add("bx", "bxs-volume-mute", "hide", "mute", "v");
         
         const input = document.createElement("INPUT");
-        input.classList.add("changeVolume");
+        input.classList.add("changeVolume", "v");
         input.setAttribute("type", "range");
         input.setAttribute("min", "0");
         input.setAttribute("max", "1");
@@ -120,12 +136,12 @@ function showDiv(key, texto) {
         input.value = "1"; 
         
         const divInput = document.createElement("DIV");
-        divInput.classList.add("input-container", "hide", "shadow", "bg-white"); 
+        divInput.classList.add("input-container", "hide", "shadow", "bg-white", "v"); 
         
         const divDownload = document.createElement("DIV");
-        divDownload.classList.add("descarga", "bg-white", "flex");
+        divDownload.classList.add("descarga", "bg-white", "flex", "shadow");
         divDownload.innerHTML = `
-            <a href="songs/${key + 1}.mp3" download>
+            <a href="songs/${song}.mp3" download>
                 <i class='bx bxs-download'></i>
             </a>
         `;
@@ -138,29 +154,31 @@ function showDiv(key, texto) {
             </div>
         `;
 
-        // Listeners para play y pause
+        // Listeners of play and pause action
         iconPlay.onclick = () => {
             audio.play();
             iconPlay.classList.add("hide");
             iconPause.classList.remove("hide");
         }
         iconPause.onclick = stopSong;
-        // Listener para el volumen
+        // Listener of volume
         volume1.onclick = onVolume;
         volume2.onclick = onVolume;  
         volume3.onclick = onVolume; 
-        // Listener para cerrar el div con la canción
+        // Listener to close the div
         remove.onclick = elimianrMusica;
         
-        // Agregar todo el div al html
+        // adds everything to the div 
         divInput.appendChild(input);
         controls.appendChild(volume1);
         controls.appendChild(volume2);
         controls.appendChild(volume3);
         controls.appendChild(divInput);
         container.appendChild(h2);
+        functions.appendChild(skipLess);
         functions.appendChild(iconPlay);
         functions.appendChild(iconPause);
+        functions.appendChild(skipPlus);
         container.appendChild(functions);
         container.appendChild(controls);
         container.appendChild(divDownload);
@@ -168,16 +186,15 @@ function showDiv(key, texto) {
         div.appendChild(content)
         div.appendChild(remove);
         body.appendChild(div);
-
-    
-
     }
 }
 
-// Muestra el tiempo de la canción
+// shows the time of the song
 function showTime() {
+    const divTime = document.querySelector(".duration");
+
     // Muestra el width de la duración de la canción
-    let divDuration = Number(document.querySelector(".duration").clientWidth);
+    let divDuration = Number(divTime.clientWidth);
     let timeBar = document.querySelector(".time");
     // Calcula la constante a usar para el avance de la canción
     let durationAudio = divDuration / audio.duration;
@@ -223,6 +240,12 @@ function onVolume() {
         div.classList.add("hide");
         div.classList.remove("flex");
     }
+    document.addEventListener("click", e => {
+        if(!e.target.classList.contains("v")) {
+            div.classList.add("hide");
+            div.classList.remove("flex");
+        }
+    });
     
 }
 
@@ -244,9 +267,6 @@ function stopSong() {
 
     setTimeout(() => {
         div.remove();
-        segundos = 0;
-        anterior = 0;
-        minutos = 0;
     }, 100)
     audio.pause();
     audio = "";
@@ -260,12 +280,44 @@ function Finish() {
 
         setTimeout(() => {
             div.remove();
-            segundos = 0;
-            anterior = 0;
-            minutos = 0;
         }, 100)
-        audio.pause();
         audio = "";
     }
+}
 
+// shows the current time of the song
+function timeSong(m, s) {
+            
+    const timeAudio = document.querySelector(".time-audio");
+    const time = document.createElement("P");
+    while(timeAudio.firstChild) {
+        timeAudio.removeChild(timeAudio.firstChild);
+    }
+    if(s < 10) {
+        time.textContent = `0${m}:0${s}`;
+    } else {
+        time.textContent = `0${m}:${s}`;
+    }
+    timeAudio.appendChild(time);
+}
+
+// hace el calculo del teimpo de la cancion
+function countTime() { 
+    let ct = `${audio.currentTime}`;
+    let ctArray = ct.split(".");
+    let seg = `${ctArray[0] / 60}`;
+    let arrayM = seg.split(".");
+    let m = arrayM[0];
+    let s = ctArray[0];
+    let se = 60;
+
+    for(let i = 1; i < 100; i++) {
+        if(m == i) {
+            s = ctArray[0] - se;
+        } else {
+            se+=60;
+        }
+    }
+
+    timeSong(m, s);
 }
